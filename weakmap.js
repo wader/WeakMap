@@ -55,24 +55,25 @@ void function(global, undefined_, undefined){
     var dataDesc = { value: { writable: true, value: undefined } },
         datalock = 'return function(k){if(k===s)return l}',
         uids     = create(null),
-        globalID = createUID();
 
-    function createUID(){
-      var key = Math.random().toString(36).slice(2);
-      return key in uids ? createUID() : uids[key] = key;
-    }
+        createUID = function(){
+          var key = Math.random().toString(36).slice(2);
+          return key in uids ? createUID() : uids[key] = key;
+        },
 
-    function storage(obj){
-      if (hasOwn.call(obj, globalID))
-        return obj[globalID];
+        globalID = createUID(),
 
-      if (!Object.isExtensible(obj))
-        throw new TypeError("Object must be extensible");
+        storage = function(obj){
+          if (hasOwn.call(obj, globalID))
+            return obj[globalID];
 
-      var store = create(null);
-      defProp(obj, globalID, { value: store });
-      return store;
-    }
+          if (!Object.isExtensible(obj))
+            throw new TypeError("Object must be extensible");
+
+          var store = create(null);
+          defProp(obj, globalID, { value: store });
+          return store;
+        };
 
     // common per-object storage area made visible by patching getOwnPropertyNames'
     define(Object, function getOwnPropertyNames(obj){
@@ -137,7 +138,7 @@ void function(global, undefined_, undefined){
 
 
     function WeakMap(iterable){
-      if (this === global || this == null || this === prototype)
+      if (this === global || this == null || this === WeakMap.prototype)
         return new WeakMap(iterable);
 
       wrap(this, new Data);
@@ -175,18 +176,26 @@ void function(global, undefined_, undefined){
     }
 
     try {
-      var src = ('return '+delete_).replace('e_', '\\u0065');
-      var del = new Function('unwrap', 'validate', src)(unwrap, validate);
+      var src = ('return '+delete_).replace('e_', '\\u0065'),
+          del = new Function('unwrap', 'validate', src)(unwrap, validate);
     } catch (e) {
       var del = delete_;
     }
 
     var src = (''+Object).split('Object');
+    var stringifier = function toString(){
+      return src[0] + nameOf(this) + src[1];
+    };
+
+    define(stringifier, stringifier);
+
+    var prep = { __proto__: [] } instanceof Array
+      ? function(f){ f.__proto__ = stringifier }
+      : function(f){ define(f, stringifier) };
+
     [toString, get, set, has, del].forEach(function(method){
       define(WeakMap.prototype, method);
-      define(method, function toString(){
-        return src[0] + nameOf(this) + src[1];
-      });
+      prep(method);
     });
 
     return WeakMap;
