@@ -1,0 +1,159 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>Weakmap</title>
+  <meta name="description" content="Shim for WeakMap with non-leaky O(1) lookup time">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">Weakmap</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">Shim for WeakMap with non-leaky O(1) lookup time</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/Benvie/WeakMap/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/Benvie/WeakMap/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/Benvie/WeakMap" class="code">View Weakmap on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>WeakMap Shim</h1>
+
+<p>This is a standalone shim for WeakMap, separated out from the full Harmony Collections shim at <a href="https://github.com/Benvie/harmony-collections">https://github.com/Benvie/harmony-collections</a>. WeakMap is by far the most useful new addition. If you only need to use objects as keys then uou can use this much more compact library that doesn't have to implement three other classes.</p>
+
+<h2>Compatability</h2>
+
+<p>Works with IE9+, Chrome, Firefox, Safari, untested in Opera.</p>
+
+<h2>Install/Use</h2>
+
+<p>If using node, install via:</p>
+
+<pre><code>npm install weakmap
+</code></pre>
+
+<p>In the browser, include <strong>weakmap.js</strong> or <strong>weakmap.min.js</strong> and WeakMap will be exposed on the window.</p>
+
+<h2>Overview</h2>
+
+<p>WeakMaps provide a new core weapon to your JS arsenal: objects as keys. This allows you to do the following awesome things: store private data "on" public objects, private properties, secretly "tag" objects, namespace properties, access controlled properties, check object uniqueness in <code>O(1)</code> time complexity.</p>
+
+<h3>WeakMap Garbage Collection Semantics</h3>
+
+<p>A benefit of using WeakMaps is enhanced garbage collection. In a WeakMap, the only reference created is key -&gt; value, so it's possible for a key/value in a WeakMap to be garbage collected while the WeakMap they're in still exists! Compare this to an Array, where all items in the Array will not be garbage collected as long as the Array isn't. This forces either explicit management of  object lifespans or, more commonly, simply results in memory leaks.</p>
+
+<p>For example, data stored using jQuery.data can never be garbage collected unless explicitly nulled out, because it is stored in a container that strongly references the items held inside. Using a WeakMap, it's possible to associate data with an element and have the data destroyed when the element is -- without memory leaking the element; i.e. <code>weakmap.set(element, { myData: 'gc safe!' })</code>. jQuery.data (every library has similar functionality) prevents the <em>element</em> from memory leaking by using a numeric id, but this does nothing for the <strong>data</strong> that is stored.</p>
+
+<h2>Example</h2>
+
+<div class="highlight"><pre><span class="c1">// reusable storage creator</span>
+<span class="kd">function</span> <span class="nx">createStorage</span><span class="p">(){</span>
+  <span class="kd">var</span> <span class="nx">store</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WeakMap</span><span class="p">;</span>
+  <span class="k">return</span> <span class="kd">function</span><span class="p">(</span><span class="nx">o</span><span class="p">){</span>
+    <span class="kd">var</span> <span class="nx">v</span> <span class="o">=</span> <span class="nx">store</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">o</span><span class="p">);</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">v</span><span class="p">)</span> <span class="nx">store</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">o</span><span class="p">,</span> <span class="nx">v</span> <span class="o">=</span> <span class="p">{});</span>
+    <span class="k">return</span> <span class="nx">v</span><span class="p">;</span>
+  <span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// allows private/namespaced properties for the objects</span>
+<span class="kd">var</span> <span class="nx">_</span> <span class="o">=</span> <span class="nx">createStorage</span><span class="p">();</span>
+
+<span class="nx">functioon</span> <span class="nx">Wrapper</span><span class="p">(</span><span class="nx">element</span><span class="p">){</span>
+  <span class="kd">var</span> <span class="nx">_element</span> <span class="o">=</span> <span class="nx">_</span><span class="p">(</span><span class="nx">element</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">_element</span><span class="p">.</span><span class="nx">wrapper</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nx">_element</span><span class="p">.</span><span class="nx">wrapper</span><span class="p">;</span>
+
+  <span class="nx">_element</span><span class="p">.</span><span class="nx">wrapper</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+  <span class="nx">_</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">element</span> <span class="o">=</span> <span class="nx">element</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">Wrapper</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="nx">get</span> <span class="nx">classes</span><span class="p">(){</span>
+    <span class="k">return</span> <span class="p">[].</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">_</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">element</span><span class="p">.</span><span class="nx">classList</span><span class="p">);</span>
+  <span class="p">},</span>
+  <span class="nx">set</span> <span class="nx">classes</span><span class="p">(</span><span class="nx">v</span><span class="p">){</span>
+    <span class="nx">_</span><span class="p">(</span><span class="k">this</span><span class="p">).</span><span class="nx">element</span><span class="p">.</span><span class="nx">className</span> <span class="o">=</span> <span class="p">[].</span><span class="nx">concat</span><span class="p">(</span><span class="nx">v</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s1">' '</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+
+<h2>API Reference</h2>
+
+<ul>
+<li>WeakMaps may be inherited from. Initialize objects via <code>WeakMap.call(obj)</code>.</li>
+</ul><h3>WeakMap</h3>
+
+<p><strong>Non-primitives</strong> are valid keys. Objects, functions, DOM nodes, etc.</p>
+
+<p>WeakMaps require the use of objects as keys; primitives are not valid keys. WeakMaps have no way to enumerate their keys or values. Because of this, the only way to retrieve a value from a WeakMap is to have access to both the WeakMap itself as well as an object used as a key.</p>
+
+<ul>
+<li>
+<code>new WeakMap(iterable)</code> Create a new WeakMap populated with the iterable. Accepts <em>[[Key, Value]...]</em>, <em>Array</em>, <em>Iterable</em>.</li>
+<li>
+<code>WeakMap#set(key, value)</code> Key must be non-primitive. Returns undefined.</li>
+<li>
+<code>WeakMap#get(key)</code> Returns the value that key corresponds to the key or undefined.</li>
+<li>
+<code>WeakMap#has(key)</code> Returns boolean.</li>
+<li>
+<code>WeakMap#delete(key)</code> Removes the value from the collection and returns boolean indicating if there was a value to delete.</li>
+</ul><h2>License</h2>
+
+<p>(The MIT License)
+Copyright (c) 2012 Brandon Benvie <a href="http://bbenvie.com">http://bbenvie.com</a></p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files
+(the 'Software'), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included with all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE
+FOR ANY  CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/Benvie" class="avatar"><img src="https://secure.gravatar.com/avatar/8c1352a9ee70b3eea4fd8bb6c878bcbf?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/Benvie">Benvie</a> maintains <a href="https://github.com/Benvie/WeakMap">Weakmap</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/Benvie/WeakMap/tarball/master" class="tar">tar</a><a href="https://github.com/Benvie/WeakMap/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
+</html>
