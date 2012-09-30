@@ -193,6 +193,8 @@ void function(global, undefined_, undefined){
       ? function(f){ f.__proto__ = stringifier }
       : function(f){ define(f, stringifier) };
 
+    prep(WeakMap);
+
     [toString, get, set, has, del].forEach(function(method){
       define(WeakMap.prototype, method);
       prep(method);
