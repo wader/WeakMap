@@ -196,6 +196,6 @@ void function(global, undefined_, undefined){
     module.exports = WeakMap;
   else if (typeof exports !== 'undefined')
     exports.WeakMap = WeakMap;
-  else if (!('WeakMap' in global)
+  else if (!('WeakMap' in global))
     global.WeakMap = WeakMap;
 }(new Function('return this')(), {});

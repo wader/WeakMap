@@ -11,7 +11,7 @@ If using node, install via:
 
     npm install weakmap
 
-In the browser, include __weakmap.js__ or ____weakmap.min.js__ and WeakMap will be exposed on the window.
+In the browser, include __weakmap.js__ or __weakmap.min.js__ and WeakMap will be exposed on the window.
 
 ## Overview
 
