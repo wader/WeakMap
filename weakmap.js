@@ -108,26 +108,26 @@ void function(global, undefined_, undefined){
 
 
   var WeakMap = (function(data){
-    function validate(key){
+    var validate = function(key){
       if (key == null || typeof key !== 'object' && typeof key !== 'function')
         throw new TypeError("Invalid WeakMap key");
     }
 
-    function wrap(collection, value){
+    var wrap = function(collection, value){
       var store = data.unlock(collection);
       if (store.value)
         throw new TypeError("Object is already a WeakMap");
       store.value = value;
     }
 
-    function unwrap(collection){
+    var unwrap = function(collection){
       var storage = data.unlock(collection).value;
       if (!storage)
         throw new TypeError("WeakMap is not generic");
       return storage;
     }
 
-    function initialize(weakmap, iterable){
+    var initialize = function(weakmap, iterable){
       if (iterable !== null && typeof iterable === 'object' && typeof iterable.forEach === 'function') {
         iterable.forEach(function(item, i){
           if (item instanceof Array && item.length === 2)
