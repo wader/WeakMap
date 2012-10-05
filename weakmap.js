@@ -23,8 +23,6 @@
 // Expanded by Benvie @ https://github.com/Benvie/harmony-collections
 
 void function(global, undefined_, undefined){
-  "use strict";
-
   var getProps = Object.getOwnPropertyNames,
       defProp  = Object.defineProperty,
       toSource = Function.prototype.toString,
@@ -107,7 +105,7 @@ void function(global, undefined_, undefined){
   }());
 
 
-  var WeakMap = (function(data){
+  var WM = (function(data){
     var validate = function(key){
       if (key == null || typeof key !== 'object' && typeof key !== 'function')
         throw new TypeError("Invalid WeakMap key");
@@ -203,10 +201,40 @@ void function(global, undefined_, undefined){
     return WeakMap;
   }(new Data));
 
-  if (typeof module !== 'undefined')
-    module.exports = WeakMap;
-  else if (typeof exports !== 'undefined')
-    exports.WeakMap = WeakMap;
-  else if (!('WeakMap' in global))
-    global.WeakMap = WeakMap;
-}(new Function('return this')(), {});
+  var defaultCreator = Object.create
+    ? function(){ return Object.create(null) }
+    : function(){ return {} };
+
+  function createStorage(creator){
+    var weakmap = new WeakMap;
+    creator || (creator = defaultCreator);
+
+    function storage(object, value){
+      if (value || arguments.length === 2) {
+        weakmap.set(object, value);
+      } else {
+        value = weakmap.get(object);
+        if (value === undefined) {
+          value = creator(object);
+          weakmap.set(object, value);
+        }
+      }
+      return value;
+    }
+
+    return storage;
+  }
+
+
+  if (typeof module !== 'undefined') {
+    module.exports = WM;
+  } else if (typeof exports !== 'undefined') {
+    exports.WeakMap = WM;
+  } else if (!('WeakMap' in global)) {
+    global.WeakMap = WM;
+  }
+
+  WM.createStorage = createStorage;
+  if (global.WeakMap)
+    global.WeakMap.createStorage = createStorage;
+}((0, eval)('this'));
