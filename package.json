@@ -9,6 +9,6 @@
     "type": "git",
     "url": "https://github.com/Benvie/WeakMap"
   },
-  "main": "WeakMap.js",
+  "main": "weakmap.js",
   "license": "MIT"
 }
