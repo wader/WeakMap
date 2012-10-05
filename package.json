@@ -3,7 +3,7 @@
   "name": "weakmap",
   "description": "Shim for WeakMap with non-leaky O(1) lookup time",
   "keywords": ["harmony", "collection", "weakmap","ecmascript", "es6", "shim", "garbage collection", "gc"],
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "http://benvie.github.com/WeakMap",
   "repository": {
     "type": "git",
