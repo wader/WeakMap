@@ -206,7 +206,7 @@ void function(global, undefined_, undefined){
     : function(){ return {} };
 
   function createStorage(creator){
-    var weakmap = new WeakMap;
+    var weakmap = new WM;
     creator || (creator = defaultCreator);
 
     function storage(object, value){
