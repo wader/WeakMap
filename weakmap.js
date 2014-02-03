@@ -51,7 +51,6 @@ void function(global, undefined_, undefined){
 
   var Data = (function(){
     var dataDesc = { value: { writable: true, value: undefined } },
-        datalock = 'return function(k){if(k===s)return l}',
         uids     = create(null),
 
         createUID = function(){
@@ -92,7 +91,12 @@ void function(global, undefined_, undefined){
 
         var data = create(null, dataDesc);
         defProp(store, puid, {
-          value: new Function('s', 'l', datalock)(secret, data)
+          value: (function(s, l) {
+            return function(k) {
+              if (k === s)
+                return l;
+            }
+          })(secret, data)
         });
         return data;
       }
@@ -173,12 +177,7 @@ void function(global, undefined_, undefined){
       return '[object WeakMap]';
     }
 
-    try {
-      var src = ('return '+delete_).replace('e_', '\\u0065'),
-          del = new Function('unwrap', 'validate', src)(unwrap, validate);
-    } catch (e) {
-      var del = delete_;
-    }
+    var del = delete_;
 
     var src = (''+Object).split('Object');
     var stringifier = function toString(){
@@ -237,4 +236,4 @@ void function(global, undefined_, undefined){
   WM.createStorage = createStorage;
   if (global.WeakMap)
     global.WeakMap.createStorage = createStorage;
-}((0, eval)('this'));
+}(this);
